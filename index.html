@@ -65,21 +65,43 @@ img{border-radius:5px;cursor:pointer;}
 
 <div class="section">
 <h3>Log Exercise</h3>
-<label>Pushups done: <input type="number" id="pushDoneSets" placeholder="sets"> × <input type="number" id="pushDoneReps" placeholder="reps"></label>
+
+<!-- Pushups -->
+<label>Pushups done: 
+  <input type="number" id="pushupsDoneSets" placeholder="sets"> × 
+  <input type="number" id="pushupsDoneReps" placeholder="reps">
+</label>
 <button onclick="logExercise('pushups')">Log</button><br>
 
-<label>Squats done: <input type="number" id="squatDoneSets" placeholder="sets"> × <input type="number" id="squatDoneReps" placeholder="reps"></label>
+<!-- Squats -->
+<label>Squats done: 
+  <input type="number" id="squatsDoneSets" placeholder="sets"> × 
+  <input type="number" id="squatsDoneReps" placeholder="reps">
+</label>
 <button onclick="logExercise('squats')">Log</button><br>
 
-<label>Plank done (sec): <input type="number" id="plankDoneSets" placeholder="sets"> × <input type="number" id="plankDoneSec" placeholder="sec"></label>
+<!-- Plank -->
+<label>Plank done (sec): 
+  <input type="number" id="plankDoneSets" placeholder="sets"> × 
+  <input type="number" id="plankDoneSec" placeholder="sec">
+</label>
 <button onclick="logExercise('plank')">Log</button><br>
 
-<label>Sit-ups done: <input type="number" id="situpsDoneSets" placeholder="sets"> × <input type="number" id="situpsDoneReps" placeholder="reps"></label>
+<!-- Sit-ups -->
+<label>Sit-ups done: 
+  <input type="number" id="situpsDoneSets" placeholder="sets"> × 
+  <input type="number" id="situpsDoneReps" placeholder="reps">
+</label>
 <button onclick="logExercise('situps')">Log</button><br>
 
-<label>Leg Raises done: <input type="number" id="legraisesDoneSets" placeholder="sets"> × <input type="number" id="legraisesDoneReps" placeholder="reps"></label>
+<!-- Leg Raises -->
+<label>Leg Raises done: 
+  <input type="number" id="legraisesDoneSets" placeholder="sets"> × 
+  <input type="number" id="legraisesDoneReps" placeholder="reps">
+</label>
 <button onclick="logExercise('legraises')">Log</button><br>
 
+<!-- Run -->
 <label>Run done (km): <input type="number" id="runDone" step="0.1" placeholder="km"></label>
 <button onclick="logRun()">Log</button><br>
 <p id="runFeedback"></p>
@@ -142,7 +164,7 @@ const weeklyProgress = [
 {push:14,squat:17,plank:55,sit:24,leg:17,run:2.5},
 {push:15,squat:18,plank:60,sit:25,leg:18,run:2.8},
 {push:16,squat:19,plank:65,sit:26,leg:19,run:3.0},
-{push:17,squat:20,sit:27,plank:70,leg:20,run:3.2}
+{push:17,squat:20,plank:70,sit:27,leg:20,run:3.2}
 ];
 
 // --- Generate daily workout ---
@@ -161,7 +183,6 @@ function generateWorkout(){
     runKm: base.run + debt.run*0.2
   };
 
-  // Update HTML with debts
   ["pushups","squats","plank","situps","legraises"].forEach(ex=>{
     document.getElementById(ex).innerText = workoutPlan[ex];
     document.getElementById(ex+"Sets").innerText = workoutPlan[ex+"Sets"];
@@ -178,16 +199,18 @@ function generateWorkout(){
 // --- Log flexible sets×reps ---
 function logExercise(name){
   let setsInput = parseFloat(document.getElementById(name+"DoneSets").value)||0;
-  let repsInput = parseFloat(document.getElementById(name+"DoneReps")?.value||document.getElementById(name+"DoneSec")?.value||0);
+  let repsInput = parseFloat((document.getElementById(name+"DoneReps")||document.getElementById(name+"DoneSec")).value||0);
   let totalDone = setsInput * repsInput;
   let plannedTotal = workoutPlan[name+"Sets"] * workoutPlan[name];
 
   if(totalDone < plannedTotal){ debt[name] += (plannedTotal - totalDone);}
   else { debt[name] = Math.max(0, debt[name] - (totalDone - plannedTotal));}
   localStorage.setItem("debt",JSON.stringify(debt));
+
   document.getElementById(name+"DoneSets").value = '';
   if(document.getElementById(name+"DoneReps")) document.getElementById(name+"DoneReps").value = '';
   if(document.getElementById(name+"DoneSec")) document.getElementById(name+"DoneSec").value = '';
+
   generateWorkout();
 }
 
