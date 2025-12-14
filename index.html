@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>6-Week Body + Face Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { background:#0f0f0f; color:#fff; font-family:Arial,sans-serif; padding:15px; }
+h1,h2,h3 { color:#00ffae; margin-bottom:10px; }
+.section { border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:10px; }
+button { padding:8px 12px; margin:5px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
+.hard { background:#c0392b; color:white; }
+.medium { background:#e67e22; color:white; }
+.light { background:#2ecc71; color:black; }
+.missed { background:#555; color:white; }
+.bad { background:#b71c1c; color:white; }
+.snack { background:#6a1b9a; color:white; }
+.panic { background:#000; color:#ff4d4d; padding:10px; text-align:center; font-weight:bold; margin-bottom:15px; border-radius:8px; }
+img { width:100%; max-width:250px; border-radius:10px; margin:5px 0; }
+.check { transform:scale(1.3); margin-right:8px; }
+input { padding:6px; margin:5px 0; width:100%; border-radius:5px; }
+.photo { max-width:150px; margin:5px; border:1px solid #333; border-radius:6px; }
+.card { background:#1c1c1c; padding:10px; margin:8px 0; border-radius:8px; }
+.collapsible { background:#222; color:#00ffae; cursor:pointer; padding:10px; border:none; text-align:left; width:100%; border-radius:8px; font-size:16px; margin-bottom:5px; }
+.content { display:none; padding:0 10px; }
+</style>
+</head>
+<body>
+
+<h1>6-Week Body + Face Tracker</h1>
+<div id="panicStatus"></div>
+
+<div class="section" id="daySection">
+<h2 id="dayTitle">Day 1</h2>
+<p><b>Strikes:</b> <span id="strikesDisplay">0</span></p>
+
+<h3>Workout for Today</h3>
+<div id="workoutList"></div>
+
+<div>
+<button class="hard" onclick="setWorkout('Hard')">Hard</button>
+<button class="medium" onclick="setWorkout('Medium')">Medium</button>
+<button class="light" onclick="setWorkout('Light')">Light</button>
+<button class="missed" onclick="setWorkout('Missed')">Missed</button>
+</div>
+
+<h3>Diet / Meals</h3>
+<div>
+<button class="bad" onclick="setDiet('Bad')">🍕 Bad Dinner</button>
+<button class="snack" onclick="setDiet('Snack')">🍦 Accidental Snack</button>
+<button class="light" onclick="setDiet('None')">✅ Nothing</button>
+<p id="dietStatus">Diet not logged</p>
+</div>
+
+<h3>Face Routine (Optional)</h3>
+<button class="collapsible">Show / Hide Face Routine</button>
+<div class="content">
+<label><input type="checkbox" class="check" id="faceAM"> AM: Wash + Moisturise</label><br>
+<label><input type="checkbox" class="check" id="facePM"> PM: Wash + Moisturise</label><br>
+<label><input type="checkbox" class="check" id="chin"> Chin Tucks (15)</label><br>
+<img src="https://exrx.net/Articulations/Spine/NeckChinTuck" alt="Chin Tuck"><br>
+<label><input type="checkbox" class="check" id="neck"> Neck Extensions (15)</label><br>
+<img src="https://exrx.net/Articulations/Spine/NeckExtension" alt="Neck Extension"><br>
+<label><input type="checkbox" class="check" id="posture"> Maintain good posture all day</label><br>
+</div>
+
+<button id="nextDayBtn" onclick="nextDay()" style="margin-top:15px; font-size:18px;">Next Day →</button>
+</div>
+
+<div class="section">
+<h2>📸 Progress Tracking</h2>
+<input type="file" accept="image/*" onchange="savePhoto(event)">
+<div id="photos"></div>
+
+<h3>Measurements</h3>
+<input id="weight" placeholder="Weight (kg)">
+<input id="waist" placeholder="Waist (cm)">
+<button onclick="saveMetrics()">Save</button>
+<ul id="metrics"></ul>
+</div>
+
+<script>
+// ----- INITIAL DATA -----
+let day = 1;
+let strikes = 0;
+let panic = false;
+let dietToday = 'None';
+let workoutToday = 'Hard';
+let photos = JSON.parse(localStorage.getItem("photos")||"[]");
+let metrics = JSON.parse(localStorage.getItem("metrics")||"[]");
+
+// Workout definitions
+const workouts = {
+  Hard: [
+    {name:"Push-Up 3x15", img:"https://exrx.net/WeightExercises/PectoralSternal/BWPushup"},
+    {name:"Plank 60s", img:"https://exrx.net/WeightExercises/RectusAbdominis/BWPlank"},
+    {name:"Leg Raise 20", img:"https://exrx.net/WeightExercises/HipFlexors/BWLyingLegRaise"},
+    {name:"Squats 20", img:"https://exrx.net/WeightExercises/Quadriceps/BWSquat"}
+  ],
+  Medium: [
+    {name:"Push-Up 2x12", img:"https://exrx.net/WeightExercises/PectoralSternal/BWPushup"},
+    {name:"Plank 45s", img:"https://exrx.net/WeightExercises/RectusAbdominis/BWPlank"},
+    {name:"Leg Raise 15", img:"https://exrx.net/WeightExercises/HipFlexors/BWLyingLegRaise"},
+    {name:"Squats 15", img:"https://exrx.net/WeightExercises/Quadriceps/BWSquat"}
+  ],
+  Light: [
+    {name:"Push-Up 2x10", img:"https://exrx.net/WeightExercises/PectoralSternal/BWPushup"},
+    {name:"Plank 30s", img:"https://exrx.net/WeightExercises/RectusAbdominis/BWPlank"},
+    {name:"Leg Raise 10", img:"https://exrx.net/WeightExercises/HipFlexors/BWLyingLegRaise"},
+    {name:"Squats 10", img:"https://exrx.net/WeightExercises/Quadriceps/BWSquat"}
+  ]
+};
+
+// ----- RENDER FUNCTIONS -----
+function renderWorkout(){
+  const list = document.getElementById("workoutList");
+  list.innerHTML = '';
+  let todayWorkouts = workouts[workoutToday];
+  todayWorkouts.forEach(w=>{
+    list.innerHTML += `<div class="card"><p>${w.name}</p><img src="${w.img}"></div>`;
+  });
+}
+
+function updatePanic(){
+  if(strikes>=3) panic=true;
+  document.getElementById("panicStatus").innerHTML = panic ? "<div class='panic'>🚨 PANIC WEEK ACTIVE — ALL WORKOUTS HARD</div>" : "";
+  document.getElementById("strikesDisplay").innerText = strikes;
+}
+
+function renderProgress(){
+  document.getElementById("photos").innerHTML = photos.map(p=>`<img src="${p}" class="photo">`).join('');
+  document.getElementById("metrics").innerHTML = metrics.map(m=>`<li>${m.date} — ${m.weight}kg / ${m.waist}cm</li>`).join('');
+}
+
+// ----- EVENT HANDLERS -----
+function setWorkout(level){
+  workoutToday = level;
+  renderWorkout();
+}
+
+function setDiet(diet){
+  dietToday = diet;
+  if(diet==='Bad' || diet==='Snack') strikes++;
+  document.getElementById("dietStatus").innerText = diet==='None' ? "No issues" : diet + " logged → strike added";
+  updatePanic();
+}
+
+// ----- NEXT DAY LOGIC -----
+function nextDay(){
+  let dayData = {
+    day: day,
+    workout: workoutToday,
+    diet: dietToday,
+    face: {
+      am: document.getElementById("faceAM").checked,
+      pm: document.getElementById("facePM").checked,
+      chin: document.getElementById("chin").checked,
+      neck: document.getElementById("neck").checked,
+      posture: document.getElementById("posture").checked
+    }
+  };
+  localStorage.setItem("day"+day, JSON.stringify(dayData));
+
+  // Determine next day intensity
+  let nextWorkout = 'Medium';
+  if(panic) nextWorkout='Hard';
+  else if(workoutToday==='Missed') nextWorkout='Hard';
+  else if(workoutToday==='Hard' && (dietToday==='Bad' || dietToday==='Snack')) nextWorkout='Hard';
+  else if(workoutToday==='Hard') nextWorkout='Medium';
+  else if(workoutToday==='Medium' && (dietToday==='Bad' || dietToday==='Snack')) nextWorkout='Hard';
+  else if(workoutToday==='Medium') nextWorkout='Medium';
+  else if(workoutToday==='Light' && (dietToday==='Bad' || dietToday==='Snack')) nextWorkout='Medium';
+  else if(workoutToday==='Light') nextWorkout='Medium';
+
+  day++;
+  workoutToday = nextWorkout;
+  dietToday = 'None';
+
+  ['faceAM','facePM','chin','neck','posture'].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById("dayTitle").innerText = "Day "+day;
+  document.getElementById("dietStatus").innerText = "Diet not logged";
+
+  renderWorkout();
+  updatePanic();
+  renderProgress();
+}
+
+// ----- PROGRESS HANDLERS -----
+function savePhoto(e){
+  let r = new FileReader();
+  r.onload = ()=>{ photos.push(r.result); localStorage.setItem("photos",JSON.stringify(photos)); renderProgress(); };
+  r.readAsDataURL(e.target.files[0]);
+}
+
+function saveMetrics(){
+  metrics.push({
+    date:new Date().toLocaleDateString(),
+    weight:document.getElementById("weight").value,
+    waist:document.getElementById("waist").value
+  });
+  localStorage.setItem("metrics",JSON.stringify(metrics));
+  renderProgress();
+}
+
+// ----- COLLAPSIBLE FACE -----
+const coll = document.getElementsByClassName("collapsible")[0];
+coll.addEventListener("click", function(){
+  this.classList.toggle("active");
+  const content = this.nextElementSibling;
+  content.style.display = content.style.display === "block" ? "none" : "block";
+});
+
+// ----- INITIAL RENDER -----
+renderWorkout();
+renderProgress();
+updatePanic();
+</script>
+</body>
+</html>
