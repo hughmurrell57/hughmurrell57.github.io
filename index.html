@@ -2,218 +2,148 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>6-Week Body + Face Tracker</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Workout Tracker</title>
 <style>
-body { background:#0f0f0f; color:#fff; font-family:Arial,sans-serif; padding:15px; }
-h1,h2,h3 { color:#00ffae; margin-bottom:10px; }
-.section { border:1px solid #333; padding:15px; margin-bottom:20px; border-radius:10px; }
-button { padding:8px 12px; margin:5px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
-.hard { background:#c0392b; color:white; }
-.medium { background:#e67e22; color:white; }
-.light { background:#2ecc71; color:black; }
-.missed { background:#555; color:white; }
-.bad { background:#b71c1c; color:white; }
-.snack { background:#6a1b9a; color:white; }
-.panic { background:#000; color:#ff4d4d; padding:10px; text-align:center; font-weight:bold; margin-bottom:15px; border-radius:8px; }
-img { width:100%; max-width:250px; border-radius:10px; margin:5px 0; }
-.check { transform:scale(1.3); margin-right:8px; }
-input { padding:6px; margin:5px 0; width:100%; border-radius:5px; }
-.photo { max-width:150px; margin:5px; border:1px solid #333; border-radius:6px; }
-.card { background:#1c1c1c; padding:10px; margin:8px 0; border-radius:8px; }
-.collapsible { background:#222; color:#00ffae; cursor:pointer; padding:10px; border:none; text-align:left; width:100%; border-radius:8px; font-size:16px; margin-bottom:5px; }
-.content { display:none; padding:0 10px; }
+  body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin:auto; background:#f5f5f5; }
+  h1, h2, h3 { text-align:center; }
+  .section { background:#fff; padding:15px; margin:10px 0; border-radius:8px; box-shadow:0 0 5px rgba(0,0,0,0.1);}
+  button { padding:8px 12px; margin:5px 2px; }
+  input[type=number] { width:70px; }
 </style>
 </head>
 <body>
 
-<h1>6-Week Body + Face Tracker</h1>
-<div id="panicStatus"></div>
+<h1>Adaptive Workout Tracker</h1>
+<h2>Day Tracker</h2>
 
-<div class="section" id="daySection">
-<h2 id="dayTitle">Day 1</h2>
-<p><b>Strikes:</b> <span id="strikesDisplay">0</span></p>
-
-<h3>Workout for Today</h3>
-<div id="workoutList"></div>
-
-<div>
-<button class="hard" onclick="setWorkout('Hard')">Hard</button>
-<button class="medium" onclick="setWorkout('Medium')">Medium</button>
-<button class="light" onclick="setWorkout('Light')">Light</button>
-<button class="missed" onclick="setWorkout('Missed')">Missed</button>
-</div>
-
-<h3>Diet / Meals</h3>
-<div>
-<button class="bad" onclick="setDiet('Bad')">🍕 Bad Dinner</button>
-<button class="snack" onclick="setDiet('Snack')">🍦 Accidental Snack</button>
-<button class="light" onclick="setDiet('None')">✅ Nothing</button>
-<p id="dietStatus">Diet not logged</p>
-</div>
-
-<h3>Face Routine (Optional)</h3>
-<button class="collapsible">Show / Hide Face Routine</button>
-<div class="content">
-<label><input type="checkbox" class="check" id="faceAM"> AM: Wash + Moisturise</label><br>
-<label><input type="checkbox" class="check" id="facePM"> PM: Wash + Moisturise</label><br>
-<label><input type="checkbox" class="check" id="chin"> Chin Tucks (15)</label><br>
-<img src="https://exrx.net/Articulations/Spine/NeckChinTuck" alt="Chin Tuck"><br>
-<label><input type="checkbox" class="check" id="neck"> Neck Extensions (15)</label><br>
-<img src="https://exrx.net/Articulations/Spine/NeckExtension" alt="Neck Extension"><br>
-<label><input type="checkbox" class="check" id="posture"> Maintain good posture all day</label><br>
-</div>
-
-<button id="nextDayBtn" onclick="nextDay()" style="margin-top:15px; font-size:18px;">Next Day →</button>
+<div class="section">
+  <h3>Today's Workload</h3>
+  <p id="workloadInfo"></p>
+  <p>Pushups: <span id="pushups">0</span></p>
+  <p>Squats: <span id="squats">0</span></p>
+  <p>Core (sec): <span id="core">0</span></p>
+  <p>Run (km): <span id="runKm">0</span></p>
 </div>
 
 <div class="section">
-<h2>📸 Progress Tracking</h2>
-<input type="file" accept="image/*" onchange="savePhoto(event)">
-<div id="photos"></div>
+  <h3>Log Exercise</h3>
+  <label>Pushups done: <input type="number" id="pushDone" step="1"></label>
+  <button onclick="logExercise('pushups')">Log</button>
+  <button onclick="skipExercise('pushups')">Skipped</button><br>
 
-<h3>Measurements</h3>
-<input id="weight" placeholder="Weight (kg)">
-<input id="waist" placeholder="Waist (cm)">
-<button onclick="saveMetrics()">Save</button>
-<ul id="metrics"></ul>
+  <label>Squats done: <input type="number" id="squatDone" step="1"></label>
+  <button onclick="logExercise('squats')">Log</button>
+  <button onclick="skipExercise('squats')">Skipped</button><br>
+
+  <label>Core done (sec): <input type="number" id="coreDone" step="1"></label>
+  <button onclick="logExercise('core')">Log</button>
+  <button onclick="skipExercise('core')">Skipped</button><br>
+
+  <label>Run done (km): <input type="number" id="runDone" step="0.1"></label>
+  <button onclick="logRun()">Log</button>
+  <button onclick="skipRun()">Skipped</button><br>
+  <p id="runFeedback"></p>
+</div>
+
+<div class="section">
+  <h3>Log Dinner</h3>
+  <button onclick="logDinner('clean')">Clean</button>
+  <button onclick="logDinner('normal')">Normal</button>
+  <button onclick="logDinner('bad')">Bad</button>
+</div>
+
+<div class="section">
+  <h3>Daily Info</h3>
+  <p id="loadScoreDisplay"></p>
+  <p id="carryOverDisplay"></p>
+</div>
+
+<div class="section">
+  <button onclick="nextDay()">Next Day</button>
 </div>
 
 <script>
-// ----- INITIAL DATA -----
-let day = 1;
-let strikes = 0;
-let panic = false;
-let dietToday = 'None';
-let workoutToday = 'Hard';
-let photos = JSON.parse(localStorage.getItem("photos")||"[]");
-let metrics = JSON.parse(localStorage.getItem("metrics")||"[]");
+let loadScore = parseInt(localStorage.getItem("loadScore")) || 58;
+let debt = JSON.parse(localStorage.getItem("debt")) || {pushups:0,squats:0,core:0,run:0};
+let carryOver = parseInt(localStorage.getItem("carryOver")) || 0;
+let workoutPlan = {};
 
-// Workout definitions
-const workouts = {
-  Hard: [
-    {name:"Push-Up 3x15", img:"https://exrx.net/WeightExercises/PectoralSternal/BWPushup"},
-    {name:"Plank 60s", img:"https://exrx.net/WeightExercises/RectusAbdominis/BWPlank"},
-    {name:"Leg Raise 20", img:"https://exrx.net/WeightExercises/HipFlexors/BWLyingLegRaise"},
-    {name:"Squats 20", img:"https://exrx.net/WeightExercises/Quadriceps/BWSquat"}
-  ],
-  Medium: [
-    {name:"Push-Up 2x12", img:"https://exrx.net/WeightExercises/PectoralSternal/BWPushup"},
-    {name:"Plank 45s", img:"https://exrx.net/WeightExercises/RectusAbdominis/BWPlank"},
-    {name:"Leg Raise 15", img:"https://exrx.net/WeightExercises/HipFlexors/BWLyingLegRaise"},
-    {name:"Squats 15", img:"https://exrx.net/WeightExercises/Quadriceps/BWSquat"}
-  ],
-  Light: [
-    {name:"Push-Up 2x10", img:"https://exrx.net/WeightExercises/PectoralSternal/BWPushup"},
-    {name:"Plank 30s", img:"https://exrx.net/WeightExercises/RectusAbdominis/BWPlank"},
-    {name:"Leg Raise 10", img:"https://exrx.net/WeightExercises/HipFlexors/BWLyingLegRaise"},
-    {name:"Squats 10", img:"https://exrx.net/WeightExercises/Quadriceps/BWSquat"}
-  ]
-};
-
-// ----- RENDER FUNCTIONS -----
-function renderWorkout(){
-  const list = document.getElementById("workoutList");
-  list.innerHTML = '';
-  let todayWorkouts = workouts[workoutToday];
-  todayWorkouts.forEach(w=>{
-    list.innerHTML += `<div class="card"><p>${w.name}</p><img src="${w.img}"></div>`;
-  });
-}
-
-function updatePanic(){
-  if(strikes>=3) panic=true;
-  document.getElementById("panicStatus").innerHTML = panic ? "<div class='panic'>🚨 PANIC WEEK ACTIVE — ALL WORKOUTS HARD</div>" : "";
-  document.getElementById("strikesDisplay").innerText = strikes;
-}
-
-function renderProgress(){
-  document.getElementById("photos").innerHTML = photos.map(p=>`<img src="${p}" class="photo">`).join('');
-  document.getElementById("metrics").innerHTML = metrics.map(m=>`<li>${m.date} — ${m.weight}kg / ${m.waist}cm</li>`).join('');
-}
-
-// ----- EVENT HANDLERS -----
-function setWorkout(level){
-  workoutToday = level;
-  renderWorkout();
-}
-
-function setDiet(diet){
-  dietToday = diet;
-  if(diet==='Bad' || diet==='Snack') strikes++;
-  document.getElementById("dietStatus").innerText = diet==='None' ? "No issues" : diet + " logged → strike added";
-  updatePanic();
-}
-
-// ----- NEXT DAY LOGIC -----
-function nextDay(){
-  let dayData = {
-    day: day,
-    workout: workoutToday,
-    diet: dietToday,
-    face: {
-      am: document.getElementById("faceAM").checked,
-      pm: document.getElementById("facePM").checked,
-      chin: document.getElementById("chin").checked,
-      neck: document.getElementById("neck").checked,
-      posture: document.getElementById("posture").checked
-    }
+function generateWorkout() {
+  const base = loadScore;
+  workoutPlan = {
+    pushups: Math.round(base*0.5 + debt.pushups*0.3),
+    squats: Math.round(base*1.1 + debt.squats*0.3),
+    core: Math.round(base*0.35 + debt.core*0.3),
+    runKm: ((base/15) + debt.run*0.2)
   };
-  localStorage.setItem("day"+day, JSON.stringify(dayData));
-
-  // Determine next day intensity
-  let nextWorkout = 'Medium';
-  if(panic) nextWorkout='Hard';
-  else if(workoutToday==='Missed') nextWorkout='Hard';
-  else if(workoutToday==='Hard' && (dietToday==='Bad' || dietToday==='Snack')) nextWorkout='Hard';
-  else if(workoutToday==='Hard') nextWorkout='Medium';
-  else if(workoutToday==='Medium' && (dietToday==='Bad' || dietToday==='Snack')) nextWorkout='Hard';
-  else if(workoutToday==='Medium') nextWorkout='Medium';
-  else if(workoutToday==='Light' && (dietToday==='Bad' || dietToday==='Snack')) nextWorkout='Medium';
-  else if(workoutToday==='Light') nextWorkout='Medium';
-
-  day++;
-  workoutToday = nextWorkout;
-  dietToday = 'None';
-
-  ['faceAM','facePM','chin','neck','posture'].forEach(id=>document.getElementById(id).checked=false);
-  document.getElementById("dayTitle").innerText = "Day "+day;
-  document.getElementById("dietStatus").innerText = "Diet not logged";
-
-  renderWorkout();
-  updatePanic();
-  renderProgress();
+  document.getElementById("pushups").innerText = workoutPlan.pushups;
+  document.getElementById("squats").innerText = workoutPlan.squats;
+  document.getElementById("core").innerText = workoutPlan.core;
+  document.getElementById("runKm").innerText = workoutPlan.runKm.toFixed(1);
+  document.getElementById("workloadInfo").innerText = `Load Score: ${loadScore}`;
+  document.getElementById("loadScoreDisplay").innerText = `Current Load Score: ${loadScore}`;
+  document.getElementById("carryOverDisplay").innerText = `Carry Over: ${carryOver}`;
 }
 
-// ----- PROGRESS HANDLERS -----
-function savePhoto(e){
-  let r = new FileReader();
-  r.onload = ()=>{ photos.push(r.result); localStorage.setItem("photos",JSON.stringify(photos)); renderProgress(); };
-  r.readAsDataURL(e.target.files[0]);
+function logExercise(name) {
+  let done = parseFloat(document.getElementById(name + "Done").value) || 0;
+  let planned = workoutPlan[name];
+  if(done < planned){
+    debt[name] += (planned - done);
+  } else {
+    debt[name] = Math.max(0, debt[name] - (done - planned));
+  }
+  localStorage.setItem("debt", JSON.stringify(debt));
+  generateWorkout();
 }
 
-function saveMetrics(){
-  metrics.push({
-    date:new Date().toLocaleDateString(),
-    weight:document.getElementById("weight").value,
-    waist:document.getElementById("waist").value
-  });
-  localStorage.setItem("metrics",JSON.stringify(metrics));
-  renderProgress();
+function skipExercise(name){
+  let planned = workoutPlan[name];
+  debt[name] += planned;
+  localStorage.setItem("debt", JSON.stringify(debt));
+  generateWorkout();
 }
 
-// ----- COLLAPSIBLE FACE -----
-const coll = document.getElementsByClassName("collapsible")[0];
-coll.addEventListener("click", function(){
-  this.classList.toggle("active");
-  const content = this.nextElementSibling;
-  content.style.display = content.style.display === "block" ? "none" : "block";
-});
+function logRun(){
+  let km = parseFloat(document.getElementById("runDone").value) || 0;
+  let planned = workoutPlan.runKm;
+  if(km < planned){
+    debt.run += (planned - km)*2;
+  } else {
+    debt.run = Math.max(0, debt.run - (km - planned));
+  }
+  localStorage.setItem("debt", JSON.stringify(debt));
+  document.getElementById("runFeedback").innerText = `Ran ${km} km. Run debt: ${debt.run.toFixed(1)}`;
+  generateWorkout();
+}
 
-// ----- INITIAL RENDER -----
-renderWorkout();
-renderProgress();
-updatePanic();
+function skipRun(){
+  debt.run += workoutPlan.runKm*2.5;
+  localStorage.setItem("debt", JSON.stringify(debt));
+  document.getElementById("runFeedback").innerText = `Run skipped. Heavy run debt added.`;
+  generateWorkout();
+}
+
+function logDinner(type){
+  if(type==="clean") loadScore += 2;
+  if(type==="normal") loadScore += 0;
+  if(type==="bad") loadScore -= 5;
+  loadScore = Math.max(0, Math.min(100, loadScore));
+  localStorage.setItem("loadScore", loadScore);
+  generateWorkout();
+}
+
+function nextDay(){
+  let totalWorkout = workoutPlan.pushups + workoutPlan.squats + workoutPlan.core + workoutPlan.runKm*10;
+  let remaining = Math.max(0, totalWorkout - (loadScore));
+  carryOver = Math.round(remaining*0.8);
+  localStorage.setItem("carryOver", carryOver);
+  generateWorkout();
+  alert("Next day generated! Carry over: "+carryOver);
+}
+
+generateWorkout();
 </script>
 </body>
 </html>
