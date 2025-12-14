@@ -97,12 +97,12 @@ let lastLog = null;
 
 // --- Weekly progression base plan ---
 const weeklyProgress = [
-{push:12,squat:15,plank:45,sit:20,leg:15,run:2.0},
-{push:13,squat:16,plank:50,sit:22,leg:16,run:2.2},
-{push:14,squat:17,plank:55,sit:24,leg:17,run:2.5},
-{push:15,squat:18,plank:60,sit:25,leg:18,run:2.8},
-{push:16,squat:19,plank:65,sit:26,leg:19,run:3.0},
-{push:17,squat:20,plank:70,sit:27,leg:20,run:3.2}
+{pushups:12,squats:15,plank:45,situps:20,legraises:15,run:2.0},
+{pushups:13,squats:16,plank:50,situps:22,legraises:16,run:2.2},
+{pushups:14,squats:17,plank:55,situps:24,legraises:17,run:2.5},
+{pushups:15,squats:18,plank:60,situps:25,legraises:18,run:2.8},
+{pushups:16,squats:19,plank:65,situps:26,legraises:19,run:3.0},
+{pushups:17,squats:20,plank:70,situps:27,legraises:20,run:3.2}
 ];
 
 // --- Generate realistic workout ---
@@ -111,12 +111,12 @@ function generateWorkout(){
   let weekIndex = Math.floor((dayCount-1)/7);
   let base = weeklyProgress[Math.min(weekIndex,weeklyProgress.length-1)];
 
-  // Realistic debt scaling based on remaining days
   let remainingDays = Math.max(1,totalDays - dayCount + 1);
   
   workoutPlan = {};
   ["pushups","squats","plank","situps","legraises"].forEach(ex=>{
-    let baseVal = base[ex.slice(0,ex.length-1)] || base[ex]; // fallback
+    let baseVal = Number(base[ex]);
+    if(isNaN(baseVal)) baseVal = 10;
     let addDebt = debt[ex]/remainingDays;
     workoutPlan[ex] = Math.round(baseVal + addDebt);
     workoutPlan[ex+"Sets"] = Math.max(1,Math.round(workoutPlan[ex]/10));
@@ -126,7 +126,8 @@ function generateWorkout(){
     document.getElementById(ex+"Debt").innerHTML = debt[ex]>0?`<span class="debt">(+${debt[ex].toFixed(1)} debt)</span>`:`<span class="feedback">All good</span>`;
   });
 
-  let runBase = base.run + debt.run/remainingDays;
+  let runBase = Number(base.run) + debt.run/remainingDays;
+  if(isNaN(runBase)) runBase = 1.0;
   workoutPlan.runKm = parseFloat(runBase.toFixed(1));
   document.getElementById("runKm").innerText = workoutPlan.runKm;
   document.getElementById("runDebt").innerHTML = debt.run>0?`<span class="debt">(+${debt.run.toFixed(1)} km debt)</span>`:`<span class="feedback">All good</span>`;
@@ -138,16 +139,24 @@ function generateWorkout(){
 
 // --- Log flexible sets×reps ---
 function logExercise(name){
-  let setsInput = parseFloat(document.getElementById(name+"DoneSets").value)||0;
-  let repsInput = parseFloat((document.getElementById(name+"DoneReps")||document.getElementById(name+"DoneSec")).value||0);
+  let setsInput = Number(document.getElementById(name+"DoneSets").value) || 0;
+  let repsInput = 0;
+  if(document.getElementById(name+"DoneReps")) repsInput = Number(document.getElementById(name+"DoneReps").value) || 0;
+  if(document.getElementById(name+"DoneSec")) repsInput = Number(document.getElementById(name+"DoneSec").value) || 0;
+
   let totalDone = setsInput * repsInput;
   let plannedTotal = workoutPlan[name]*workoutPlan[name+"Sets"];
-
-  lastLog = {type:"exercise", name, totalDone, plannedTotal, prevDebt: debt[name]};
-
-  let missedRatio = Math.max(0,(plannedTotal-totalDone)/plannedTotal);
   let remainingDays = Math.max(1,totalDays-dayCount+1);
-  debt[name] = missedRatio * plannedTotal; // realistic: spread across remaining days
+
+  // --- Adaptive realistic debt ---
+  let prevDebt = debt[name];
+  if(totalDone >= plannedTotal){
+    debt[name] = Math.max(0, debt[name] - (totalDone - plannedTotal));
+  } else {
+    debt[name] = debt[name] + (plannedTotal - totalDone);
+  }
+
+  lastLog = {type:"exercise", name, totalDone, plannedTotal, prevDebt};
 
   localStorage.setItem("debt", JSON.stringify(debt));
 
@@ -160,13 +169,17 @@ function logExercise(name){
 
 // --- Run ---
 function logRun(){
-  let km = parseFloat(document.getElementById("runDone").value)||0;
+  let km = Number(document.getElementById("runDone").value) || 0;
   let planned = workoutPlan.runKm;
-  lastLog = {type:"run", totalDone: km, prevDebt: debt.run};
+  let prevDebt = debt.run;
 
-  let missedRatio = Math.max(0,(planned - km)/planned);
-  let remainingDays = Math.max(1,totalDays-dayCount+1);
-  debt.run = missedRatio * planned;
+  if(km >= planned){
+    debt.run = Math.max(0, debt.run - (km - planned));
+  } else {
+    debt.run = debt.run + (planned - km);
+  }
+
+  lastLog = {type:"run", totalDone: km, prevDebt};
 
   localStorage.setItem("debt",JSON.stringify(debt));
   document.getElementById("runDone").value = '';
@@ -204,7 +217,7 @@ function undoLast(){
   lastLog = null;
   localStorage.setItem("debt", JSON.stringify(debt));
   generateWorkout();
-  alert("Last log undone, debt removed!");
+  alert("Last log undone, debt restored!");
 }
 
 // --- Rest day ---
