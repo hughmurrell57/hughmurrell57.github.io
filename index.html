@@ -10,7 +10,9 @@ h1,h2,h3{text-align:center;}
 .section{background:#fff;padding:15px;margin:10px 0;border-radius:8px;box-shadow:0 0 5px rgba(0,0,0,0.1);}
 button{padding:8px 12px;margin:5px 2px;cursor:pointer;}
 input[type=number]{width:60px;}
-img{border-radius:5px;}
+img{border-radius:5px;cursor:pointer;}
+.feedback{color:green;font-weight:bold;}
+.debt{color:red;font-weight:bold;}
 </style>
 </head>
 <body>
@@ -18,44 +20,44 @@ img{border-radius:5px;}
 <h1>6-Week Adaptive Fitness Tracker</h1>
 
 <div class="section">
-<h2>Today's Workout</h2>
+<h2>Day <span id="dayNumber">1</span> Workout</h2>
 <p id="workloadInfo"></p>
-<p>Pushups: <span id="pushups">0</span> reps × <span id="pushupsSets">0</span> sets</p>
-<p>Squats: <span id="squats">0</span> reps × <span id="squatsSets">0</span> sets</p>
+<p>Pushups: <span id="pushups">0</span> reps × <span id="pushupsSets">0</span> sets <span id="pushupsDebt"></span></p>
+<p>Squats: <span id="squats">0</span> reps × <span id="squatsSets">0</span> sets <span id="squatsDebt"></span></p>
 <p>Abs/Core:</p>
 <ul>
-<li>Plank: <span id="plank">0</span> sec × <span id="plankSets">0</span> sets</li>
-<li>Sit-ups: <span id="situps">0</span> reps × <span id="situpsSets">0</span> sets</li>
-<li>Leg Raises: <span id="legraises">0</span> reps × <span id="legraisesSets">0</span> sets</li>
+<li>Plank: <span id="plank">0</span> sec × <span id="plankSets">0</span> sets <span id="plankDebt"></span></li>
+<li>Sit-ups: <span id="situps">0</span> reps × <span id="situpsSets">0</span> sets <span id="situpsDebt"></span></li>
+<li>Leg Raises: <span id="legraises">0</span> reps × <span id="legraisesSets">0</span> sets <span id="legraisesDebt"></span></li>
 </ul>
-<p>Run: <span id="runKm">0</span> km</p>
+<p>Run: <span id="runKm">0</span> km <span id="runDebt"></span></p>
 </div>
 
 <div class="section">
 <h3>Exercise Guide (Click images)</h3>
 <div style="display:flex;flex-wrap:wrap;gap:10px;">
   <div>
-    <img src="https://i.imgur.com/9Qp1xkF.png" alt="Pushups" width="80" onclick="showExercise('Pushups','4 sets × 12–20 reps. Keep body straight, elbows close.')">
+    <img src="https://i.imgur.com/9Qp1xkF.png" alt="Pushups" width="80" onclick="showExercise('pushups')">
     <p>Pushups</p>
   </div>
   <div>
-    <img src="https://i.imgur.com/fkX0rI7.png" alt="Squats" width="80" onclick="showExercise('Squats','4 sets × 15–25 reps. Keep knees over toes, back straight.')">
+    <img src="https://i.imgur.com/fkX0rI7.png" alt="Squats" width="80" onclick="showExercise('squats')">
     <p>Squats</p>
   </div>
   <div>
-    <img src="https://i.imgur.com/M8XxgYc.png" alt="Plank" width="80" onclick="showExercise('Plank','3 sets × 45–75 sec. Keep body straight, core tight.')">
+    <img src="https://i.imgur.com/M8XxgYc.png" alt="Plank" width="80" onclick="showExercise('plank')">
     <p>Plank</p>
   </div>
   <div>
-    <img src="https://i.imgur.com/ohYZq7V.png" alt="Sit-ups" width="80" onclick="showExercise('Sit-ups','3 sets × 20–25 reps. Engage core, slow and controlled.')">
+    <img src="https://i.imgur.com/ohYZq7V.png" alt="Sit-ups" width="80" onclick="showExercise('situps')">
     <p>Sit-ups</p>
   </div>
   <div>
-    <img src="https://i.imgur.com/8S2Z4oe.png" alt="Leg Raises" width="80" onclick="showExercise('Leg Raises','3 sets × 15–20 reps. Lift legs slowly, avoid swinging.')">
+    <img src="https://i.imgur.com/8S2Z4oe.png" alt="Leg Raises" width="80" onclick="showExercise('legraises')">
     <p>Leg Raises</p>
   </div>
   <div>
-    <img src="https://i.imgur.com/UXyS2qB.png" alt="Run" width="80" onclick="showExercise('Run','Distance based on today plan. Maintain steady pace, optional sprints for fat burn.')">
+    <img src="https://i.imgur.com/UXyS2qB.png" alt="Run" width="80" onclick="showExercise('run')">
     <p>Run</p>
   </div>
 </div>
@@ -63,29 +65,23 @@ img{border-radius:5px;}
 
 <div class="section">
 <h3>Log Exercise</h3>
-<label>Pushups done: <input type="number" id="pushDone" step="1"></label>
-<button onclick="logExercise('pushups')">Log</button>
-<button onclick="skipExercise('pushups')">Skipped</button><br>
+<label>Pushups done: <input type="number" id="pushDoneSets" placeholder="sets"> × <input type="number" id="pushDoneReps" placeholder="reps"></label>
+<button onclick="logExercise('pushups')">Log</button><br>
 
-<label>Squats done: <input type="number" id="squatDone" step="1"></label>
-<button onclick="logExercise('squats')">Log</button>
-<button onclick="skipExercise('squats')">Skipped</button><br>
+<label>Squats done: <input type="number" id="squatDoneSets" placeholder="sets"> × <input type="number" id="squatDoneReps" placeholder="reps"></label>
+<button onclick="logExercise('squats')">Log</button><br>
 
-<label>Plank done (sec): <input type="number" id="plankDone" step="1"></label>
-<button onclick="logExercise('plank')">Log</button>
-<button onclick="skipExercise('plank')">Skipped</button><br>
+<label>Plank done (sec): <input type="number" id="plankDoneSets" placeholder="sets"> × <input type="number" id="plankDoneSec" placeholder="sec"></label>
+<button onclick="logExercise('plank')">Log</button><br>
 
-<label>Sit-ups done: <input type="number" id="situpsDone" step="1"></label>
-<button onclick="logExercise('situps')">Log</button>
-<button onclick="skipExercise('situps')">Skipped</button><br>
+<label>Sit-ups done: <input type="number" id="situpsDoneSets" placeholder="sets"> × <input type="number" id="situpsDoneReps" placeholder="reps"></label>
+<button onclick="logExercise('situps')">Log</button><br>
 
-<label>Leg Raises done: <input type="number" id="legraisesDone" step="1"></label>
-<button onclick="logExercise('legraises')">Log</button>
-<button onclick="skipExercise('legraises')">Skipped</button><br>
+<label>Leg Raises done: <input type="number" id="legraisesDoneSets" placeholder="sets"> × <input type="number" id="legraisesDoneReps" placeholder="reps"></label>
+<button onclick="logExercise('legraises')">Log</button><br>
 
-<label>Run done (km): <input type="number" id="runDone" step="0.1"></label>
-<button onclick="logRun()">Log</button>
-<button onclick="skipRun()">Skipped</button><br>
+<label>Run done (km): <input type="number" id="runDone" step="0.1" placeholder="km"></label>
+<button onclick="logRun()">Log</button><br>
 <p id="runFeedback"></p>
 </div>
 
@@ -122,7 +118,7 @@ img{border-radius:5px;}
 <button onclick="nextDay()">Next Day</button>
 </div>
 
-<!-- Modal -->
+<!-- Exercise Popup -->
 <div id="exerciseModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
 <div style="background:#fff;padding:20px;border-radius:10px;max-width:400px;text-align:center;position:relative;">
 <span style="position:absolute;top:10px;right:15px;cursor:pointer;font-size:20px;" onclick="closeModal()">×</span>
@@ -136,7 +132,7 @@ img{border-radius:5px;}
 let loadScore = parseInt(localStorage.getItem("loadScore")) || 58;
 let debt = JSON.parse(localStorage.getItem("debt")) || {pushups:0,squats:0,plank:0,situps:0,legraises:0,run:0};
 let carryOver = parseInt(localStorage.getItem("carryOver")) || 0;
-let dayCount = parseInt(localStorage.getItem("dayCount")) || 1; 
+let dayCount = parseInt(localStorage.getItem("dayCount")) || 1;
 let workoutPlan = {};
 
 // --- Weekly progression ---
@@ -146,14 +142,16 @@ const weeklyProgress = [
 {push:14,squat:17,plank:55,sit:24,leg:17,run:2.5},
 {push:15,squat:18,plank:60,sit:25,leg:18,run:2.8},
 {push:16,squat:19,plank:65,sit:26,leg:19,run:3.0},
-{push:17,squat:20,plank:70,sit:27,leg:20,run:3.2}
+{push:17,squat:20,sit:27,plank:70,leg:20,run:3.2}
 ];
 
 // --- Generate daily workout ---
 function generateWorkout(){
+  document.getElementById("dayNumber").innerText = dayCount;
   let weekIndex = Math.floor((dayCount-1)/7);
   let base = weeklyProgress[Math.min(weekIndex,weeklyProgress.length-1)];
   let setFactor = Math.max(1,Math.round(base.push/5));
+
   workoutPlan = {
     pushups: base.push, pushupsSets: setFactor,
     squats: base.squat, squatsSets: setFactor,
@@ -162,34 +160,34 @@ function generateWorkout(){
     legraises: base.leg, legraisesSets: setFactor,
     runKm: base.run + debt.run*0.2
   };
-  document.getElementById("pushups").innerText = workoutPlan.pushups;
-  document.getElementById("pushupsSets").innerText = workoutPlan.pushupsSets;
-  document.getElementById("squats").innerText = workoutPlan.squats;
-  document.getElementById("squatsSets").innerText = workoutPlan.squatsSets;
-  document.getElementById("plank").innerText = workoutPlan.plank;
-  document.getElementById("plankSets").innerText = workoutPlan.plankSets;
-  document.getElementById("situps").innerText = workoutPlan.situps;
-  document.getElementById("situpsSets").innerText = workoutPlan.situpsSets;
-  document.getElementById("legraises").innerText = workoutPlan.legraises;
-  document.getElementById("legraisesSets").innerText = workoutPlan.legraisesSets;
+
+  // Update HTML with debts
+  ["pushups","squats","plank","situps","legraises"].forEach(ex=>{
+    document.getElementById(ex).innerText = workoutPlan[ex];
+    document.getElementById(ex+"Sets").innerText = workoutPlan[ex+"Sets"];
+    document.getElementById(ex+"Debt").innerHTML = debt[ex]>0?`<span class="debt">(+${debt[ex]} debt)</span>`:`<span class="feedback">All good</span>`;
+  });
   document.getElementById("runKm").innerText = workoutPlan.runKm.toFixed(1);
-  document.getElementById("workloadInfo").innerText = `Day ${dayCount} Load Score: ${loadScore}`;
+  document.getElementById("runDebt").innerHTML = debt.run>0?`<span class="debt">(+${debt.run.toFixed(1)} km debt)</span>`:`<span class="feedback">All good</span>`;
+  
+  document.getElementById("workloadInfo").innerText = `Load Score: ${loadScore}`;
   document.getElementById("loadScoreDisplay").innerText = `Current Load Score: ${loadScore}`;
   document.getElementById("carryOverDisplay").innerText = `Carry Over: ${carryOver}`;
 }
 
-// --- Log exercises ---
+// --- Log flexible sets×reps ---
 function logExercise(name){
-  let done = parseFloat(document.getElementById(name+"Done").value)||0;
-  let planned = workoutPlan[name];
-  if(done < planned){ debt[name] += (planned - done); }
-  else { debt[name] = Math.max(0, debt[name] - (done - planned)); }
+  let setsInput = parseFloat(document.getElementById(name+"DoneSets").value)||0;
+  let repsInput = parseFloat(document.getElementById(name+"DoneReps")?.value||document.getElementById(name+"DoneSec")?.value||0);
+  let totalDone = setsInput * repsInput;
+  let plannedTotal = workoutPlan[name+"Sets"] * workoutPlan[name];
+
+  if(totalDone < plannedTotal){ debt[name] += (plannedTotal - totalDone);}
+  else { debt[name] = Math.max(0, debt[name] - (totalDone - plannedTotal));}
   localStorage.setItem("debt",JSON.stringify(debt));
-  generateWorkout();
-}
-function skipExercise(name){
-  debt[name] += workoutPlan[name];
-  localStorage.setItem("debt",JSON.stringify(debt));
+  document.getElementById(name+"DoneSets").value = '';
+  if(document.getElementById(name+"DoneReps")) document.getElementById(name+"DoneReps").value = '';
+  if(document.getElementById(name+"DoneSec")) document.getElementById(name+"DoneSec").value = '';
   generateWorkout();
 }
 
@@ -200,13 +198,8 @@ function logRun(){
   if(km < planned){ debt.run += (planned - km)*2; }
   else { debt.run = Math.max(0,debt.run - (km - planned)); }
   localStorage.setItem("debt",JSON.stringify(debt));
-  document.getElementById("runFeedback").innerText = `Ran ${km} km. Run debt: ${debt.run.toFixed(1)}`;
-  generateWorkout();
-}
-function skipRun(){
-  debt.run += workoutPlan.runKm*2.5;
-  localStorage.setItem("debt",JSON.stringify(debt));
-  document.getElementById("runFeedback").innerText = `Run skipped. Heavy run debt added.`;
+  document.getElementById("runDone").value = '';
+  document.getElementById("runFeedback").innerText = `Ran ${km} km. Debt updated.`;
   generateWorkout();
 }
 
@@ -220,6 +213,7 @@ function logMeal(meal,type){
   loadScore = Math.max(0,Math.min(100,loadScore));
   localStorage.setItem("loadScore",loadScore);
   generateWorkout();
+  alert(`${meal} logged as ${type}. LoadScore change: ${change}`);
 }
 
 // --- Next day ---
@@ -231,18 +225,19 @@ function nextDay(){
   carryOver = Math.round(remaining*0.8);
   localStorage.setItem("carryOver",carryOver);
   generateWorkout();
-  alert("Next day generated! Carry over: "+carryOver);
+  alert(`Next day generated! Carry over: ${carryOver}`);
 }
 
-// --- Exercise popup ---
-function showExercise(title,text){
-  document.getElementById("modalTitle").innerText = title;
-  document.getElementById("modalText").innerText = text;
+// --- Popups ---
+function showExercise(ex){
+  let sets = workoutPlan[ex+"Sets"];
+  let reps = workoutPlan[ex];
+  let unit = (ex==="plank")?"sec":"reps";
+  document.getElementById("modalTitle").innerText = ex.charAt(0).toUpperCase()+ex.slice(1);
+  document.getElementById("modalText").innerText = `${sets} sets × ${reps} ${unit}\nFollow proper form and control.`;
   document.getElementById("exerciseModal").style.display = "flex";
 }
-function closeModal(){
-  document.getElementById("exerciseModal").style.display = "none";
-}
+function closeModal(){document.getElementById("exerciseModal").style.display = "none";}
 
 // --- Init ---
 generateWorkout();
